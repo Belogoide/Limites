@@ -7,9 +7,33 @@
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
   <style>
-    body {font-family:'Montserrat',sans-serif;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;}
-    h2 {margin-bottom:10px;}
-    button {margin:10px;padding:10px 20px;border:none;border-radius:6px;background:#1e40af;color:white;font-weight:600;cursor:pointer;}
+    body {
+      font-family:'Montserrat',sans-serif;
+      background:#000;
+      color:#fff;
+      min-height:100vh;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .container {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      width:100%;
+    }
+    h2 {margin:20px 0 10px 0;}
+    button {
+      margin:10px;
+      padding:10px 20px;
+      border:none;
+      border-radius:6px;
+      background:#1e40af;
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+    }
     button:hover {background:#2563eb;}
     table {border-collapse:collapse;margin-top:20px;background:#111;text-align:center;}
     th,td {border:1px solid #333;padding:12px;}
@@ -21,69 +45,82 @@
     .modal {display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center;}
     .modal-content {background:#111;padding:20px;border-radius:8px;width:300px;text-align:center;}
     .modal-content h3 {margin-top:0;}
-    .modal-content input,.modal-content select {width:90%;margin:8px 0;padding:8px;border:none;border-radius:4px;background:#222;color:#fff;text-align:center;}
+    .modal-content input,.modal-content select {
+      width:90%;margin:8px 0;padding:8px;border:none;border-radius:4px;background:#222;color:#fff;text-align:center;
+    }
     .modal-content button {margin-top:10px;}
-    #searchCpf {margin:10px 0;padding:8px;border:none;border-radius:4px;background:#222;color:#fff;text-align:center;width:200px;}
+    #searchCpf {
+      margin:10px 0;
+      padding:8px;
+      border:none;
+      border-radius:4px;
+      background:#222;
+      color:#fff;
+      text-align:center;
+      width:200px;
+    }
   </style>
 </head>
 <body>
-<h2>Radar de Limites</h2>
+  <div class="container">
+    <h2>Radar de Limites</h2>
 
-<input id="searchCpf" placeholder="Pesquisar CPF" maxlength="14">
+    <input id="searchCpf" placeholder="Pesquisar CPF" maxlength="14">
 
-<div>
-  <button onclick="openModal('lancar')">Lançar Limite</button>
-  <button onclick="openModal('tomar')">Tomar Crédito</button>
-</div>
+    <div>
+      <button onclick="openModal('lancar')">Lançar Limite</button>
+      <button onclick="openModal('tomar')">Tomar Crédito</button>
+    </div>
 
-<table id="tabela">
-  <thead>
-    <tr>
-      <th>Nº do Limite</th>
-      <th>Safra</th>
-      <th>Nome</th>
-      <th>CPF</th>
-      <th>Limite Total</th>
-      <th>Tomado</th>
-      <th>% Tomado</th>
-      <th>Disponível</th>
-      <th>% Disponível</th>
-      <th>Data Aprovação</th>
-      <th>Data da Tomada</th>
-      <th>Data Expiração</th>
-      <th>Dias até Expiração</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<!-- Modal Lançar -->
-<div class="modal" id="modalLancar">
-  <div class="modal-content">
-    <h3>Lançar Limite</h3>
-    <input id="nome" placeholder="Nome">
-    <input id="cpf" placeholder="CPF" maxlength="14">
-    <select id="safra">
-      <option value="2025/2026" selected>2025/2026</option>
-      <option value="2026/2027">2026/2027</option>
-    </select>
-    <input id="valor" placeholder="Valor Aprovado">
-    <input id="aprovacao" type="date">
-    <button onclick="lancarLimite()">Confirmar</button>
-    <button onclick="closeModal('lancar')">Fechar</button>
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Nº do Limite</th>
+          <th>Safra</th>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Limite Total</th>
+          <th>Tomado</th>
+          <th>% Tomado</th>
+          <th>Disponível</th>
+          <th>% Disponível</th>
+          <th>Data Aprovação</th>
+          <th>Data da Tomada</th>
+          <th>Data Expiração</th>
+          <th>Dias até Expiração</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
-</div>
 
-<!-- Modal Tomar -->
-<div class="modal" id="modalTomar">
-  <div class="modal-content">
-    <h3>Tomar Crédito</h3>
-    <input id="cpfTomar" placeholder="CPF" maxlength="14">
-    <input id="valorTomar" placeholder="Valor a Tomar">
-    <button onclick="tomarCredito()">Confirmar</button>
-    <button onclick="closeModal('tomar')">Fechar</button>
+  <!-- Modal Lançar -->
+  <div class="modal" id="modalLancar">
+    <div class="modal-content">
+      <h3>Lançar Limite</h3>
+      <input id="nome" placeholder="Nome">
+      <input id="cpf" placeholder="CPF" maxlength="14">
+      <select id="safra">
+        <option value="2025/2026" selected>2025/2026</option>
+        <option value="2026/2027">2026/2027</option>
+      </select>
+      <input id="valor" placeholder="Valor Aprovado">
+      <input id="aprovacao" type="date">
+      <button onclick="lancarLimite()">Confirmar</button>
+      <button onclick="closeModal('lancar')">Fechar</button>
+    </div>
   </div>
-</div>
+
+  <!-- Modal Tomar -->
+  <div class="modal" id="modalTomar">
+    <div class="modal-content">
+      <h3>Tomar Crédito</h3>
+      <input id="cpfTomar" placeholder="CPF" maxlength="14">
+      <input id="valorTomar" placeholder="Valor a Tomar">
+      <button onclick="tomarCredito()">Confirmar</button>
+      <button onclick="closeModal('tomar')">Fechar</button>
+    </div>
+  </div>
 
 <script>
 const firebaseConfig={apiKey:"AIzaSyBzkv1c6w0hTcJs-Cydqr1H4mHMmHUDDwE",authDomain:"limites-fd5a6.firebaseapp.com",projectId:"limites-fd5a6",storageBucket:"limites-fd5a6.appspot.com",messagingSenderId:"51777773197",appId:"1:51777773197:web:c998aed25346219aeecf14"};
@@ -113,27 +150,23 @@ function render(){
 
     let expStr="";let diasVenc="";let classe="";let tomadaStr=l.dataTomada?new Date(l.dataTomada).toLocaleDateString("pt-BR"):"-";
 
-    if(disponivel<=0){
-      classe="red";
-      expStr="TOMADO";
-      diasVenc="TOMADO";
-    }else if(dias>90){
-      classe="red";
-      disponivel=0;
-      expStr="EXPIRADO";
-      diasVenc="EXPIRADO";
-    }else if(dias<=7){
-      classe="green";
-      expStr=new Date(aprov.getTime()+90*24*60*60*1000).toLocaleDateString("pt-BR");
-      diasVenc=90-dias;
-    }else if(dias<=30){
-      classe="yellow";
-      expStr=new Date(aprov.getTime()+90*24*60*60*1000).toLocaleDateString("pt-BR");
-      diasVenc=90-dias;
-    }else{
-      classe="orange";
-      expStr=new Date(aprov.getTime()+90*24*60*60*1000).toLocaleDateString("pt-BR");
-      diasVenc=90-dias;
+    if(l.dataExpirada){
+      classe="red";expStr="EXPIRADO";diasVenc="EXPIRADO";disponivel=0;
+    }
+    else if(disponivel<=0){
+      classe="red";expStr="TOMADO";diasVenc="TOMADO";
+    }
+    else if(dias>90){
+      classe="red";disponivel=0;expStr="EXPIRADO";diasVenc="EXPIRADO";
+    }
+    else if(dias<=7){
+      classe="green";expStr=new Date(aprov.getTime()+90*24*60*60*1000).toLocaleDateString("pt-BR");diasVenc=90-dias;
+    }
+    else if(dias<=30){
+      classe="yellow";expStr=new Date(aprov.getTime()+90*24*60*60*1000).toLocaleDateString("pt-BR");diasVenc=90-dias;
+    }
+    else{
+      classe="orange";expStr=new Date(aprov.getTime()+90*24*60*60*1000).toLocaleDateString("pt-BR");diasVenc=90-dias;
     }
 
     tr.className=classe;
@@ -165,14 +198,26 @@ function lancarLimite(){
   const aprov=document.getElementById("aprovacao").value;
   const safra=document.getElementById("safra").value;
   if(!nome||!cpf||cpf.length!==11||!valor||!aprov)return alert("Preencha todos os campos corretamente");
+
+  // Expira automaticamente propostas antigas do mesmo CPF
+  limites.forEach(l=>{
+    if(l.cpf===cpf){
+      l.limiteTotal=0;
+      l.tomado=0;
+      l.dataExpirada=true;
+    }
+  });
+
   limites.push({nome,cpf,safra,limiteTotal:valor,tomado:0,dataAprovacao:aprov,dataTomada:null});
   closeModal('lancar');render();salvarNoFirebase();
 }
+
 function tomarCredito(){
   const cpf=document.getElementById("cpfTomar").value.replace(/\D/g,"");
   const valor=parseFloat(document.getElementById("valorTomar").value.replace(/\D/g,""))/100;
   let cliente=limites.find(l=>l.cpf===cpf&&l.limiteTotal-l.tomado>0);
   if(!cliente)return alert("Cliente não encontrado ou sem limite disponível");
+  if(cliente.dataExpirada)return alert("Limite expirado");
   const dias=diasEntre(cliente.dataAprovacao);
   if(dias>90)return alert("Limite expirado");
   const disponivel=cliente.limiteTotal-cliente.tomado;
