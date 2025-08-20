@@ -1,31 +1,88 @@
+
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<title>Radar de Limites</title>
-<style>
-  body { font-family: Arial, sans-serif; background:#f8fafc; margin:20px; }
-  table { border-collapse: collapse; width:100%; background:white; }
-  th, td { border:1px solid #ddd; padding:8px; text-align:center; }
-  th { background:#f1f5f9; }
-  tr.green { background:#d1fadf; }
-  tr.yellow { background:#fef3c7; }
-  tr.orange { background:#ffedd5; }
-  button { margin:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
-  .primary { background:#2563eb; color:white; }
-  .secondary { background:#475569; color:white; }
-  .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; }
-  .modal-content { background:white; padding:20px; border-radius:8px; min-width:300px; }
-  .close { float:right; cursor:pointer; color:#475569; }
-</style>
+  <meta charset="utf-8">
+  <title>Radar de Limites</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background:#000;
+      color:#fff;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      margin:0;
+    }
+    h2 { margin-bottom:20px; }
+    button {
+      margin:10px;
+      padding:10px 20px;
+      border:none;
+      border-radius:6px;
+      background:#1e40af;
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+    }
+    button:hover { background:#2563eb; }
+    table {
+      border-collapse:collapse;
+      margin-top:20px;
+      background:#111;
+      text-align:center;
+    }
+    th, td {
+      border:1px solid #333;
+      padding:12px;
+    }
+    th { background:#222; }
+    tr.green { background:#064e3b; }
+    tr.yellow { background:#78350f; }
+    tr.orange { background:#7c2d12; }
+    tr.red { background:#7f1d1d; color:#fff; }
+    .modal {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.85);
+      align-items:center;
+      justify-content:center;
+    }
+    .modal-content {
+      background:#111;
+      padding:20px;
+      border-radius:8px;
+      width:300px;
+      text-align:center;
+    }
+    .modal-content h3 { margin-top:0; }
+    .modal-content input {
+      width:90%;
+      margin:8px 0;
+      padding:8px;
+      border:none;
+      border-radius:4px;
+      background:#222;
+      color:#fff;
+      text-align:center;
+    }
+    .modal-content button { margin-top:10px; }
+  </style>
 </head>
 <body>
-
 <h2>Radar de Limites</h2>
-<button class="primary" onclick="openModal('lancarModal')">Lançar Limite</button>
-<button class="secondary" onclick="openModal('creditoModal')">Tomada de Crédito</button>
+<div>
+  <button onclick="openModal('lancar')">Lançar Limite</button>
+  <button onclick="openModal('tomar')">Tomar Crédito</button>
+</div>
 
-<table id="limitesTable">
+<table id="tabela">
   <thead>
     <tr>
       <th>Nome</th>
@@ -33,116 +90,169 @@
       <th>Limite Total</th>
       <th>Tomado</th>
       <th>Tomado %</th>
-      <th>Limite Disponível</th>
+      <th>Disponível</th>
       <th>Data Aprovação</th>
       <th>Data Expiração</th>
+      <th>Dias até Expiração</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
 
-<!-- Modal Lançar Limite -->
-<div id="lancarModal" class="modal">
+<!-- Modal Lançar -->
+<div class="modal" id="modalLancar">
   <div class="modal-content">
-    <span class="close" onclick="closeModal('lancarModal')">&times;</span>
     <h3>Lançar Limite</h3>
-    <label>Nome: <input type="text" id="nomeInput"></label><br><br>
-    <label>CPF: <input type="text" id="cpfInput"></label><br><br>
-    <label>Valor Aprovado: <input type="number" id="valorInput"></label><br><br>
-    <label>Data Aprovação: <input type="date" id="dataInput"></label><br><br>
-    <button class="primary" onclick="lancarLimite()">Confirmar</button>
+    <input id="nome" placeholder="Nome">
+    <input id="cpf" placeholder="CPF">
+    <input id="valor" type="number" placeholder="Valor Aprovado">
+    <input id="aprovacao" type="date">
+    <button onclick="lancarLimite()">Confirmar</button>
+    <button onclick="closeModal('lancar')">Fechar</button>
   </div>
 </div>
 
-<!-- Modal Tomada de Crédito -->
-<div id="creditoModal" class="modal">
+<!-- Modal Tomar -->
+<div class="modal" id="modalTomar">
   <div class="modal-content">
-    <span class="close" onclick="closeModal('creditoModal')">&times;</span>
-    <h3>Tomada de Crédito</h3>
-    <label>CPF: <input type="text" id="cpfCredito"></label><br><br>
-    <label>Valor Tomado: <input type="number" id="valorCredito"></label><br><br>
-    <button class="primary" onclick="tomarCredito()">Confirmar</button>
+    <h3>Tomar Crédito</h3>
+    <input id="cpfTomar" placeholder="CPF">
+    <input id="valorTomar" type="number" placeholder="Valor a Tomar">
+    <button onclick="tomarCredito()">Confirmar</button>
+    <button onclick="closeModal('tomar')">Fechar</button>
   </div>
 </div>
 
 <script>
-function openModal(id){ document.getElementById(id).style.display="flex"; }
-function closeModal(id){ document.getElementById(id).style.display="none"; }
+const firebaseConfig = {
+  apiKey: "AIzaSyBzkv1c6w0hTcJs-Cydqr1H4mHMmHUDDwE",
+  authDomain: "limites-fd5a6.firebaseapp.com",
+  projectId: "limites-fd5a6",
+  storageBucket: "limites-fd5a6.appspot.com",
+  messagingSenderId: "51777773197",
+  appId: "1:51777773197:web:c998aed25346219aeecf14"
+};
 
-function getRowByCPF(cpf){
-  const rows = document.querySelectorAll("#limitesTable tbody tr");
-  for(let r of rows){
-    if(r.dataset.cpf === cpf) return r;
-  }
-  return null;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let limites = [];
+
+function openModal(tipo){
+  document.getElementById(tipo==='lancar'?'modalLancar':'modalTomar').style.display='flex';
+}
+function closeModal(tipo){
+  document.getElementById(tipo==='lancar'?'modalLancar':'modalTomar').style.display='none';
+}
+
+function diasEntre(data){
+  return Math.floor((new Date() - new Date(data + "T00:00:00")) / (1000 * 60 * 60 * 24));
+}
+
+function render(){
+  const tbody = document.querySelector("#tabela tbody");
+  tbody.innerHTML = "";
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  limites.forEach(l => {
+    const tr = document.createElement("tr");
+    const aprov = new Date(l.dataAprovacao + "T00:00:00");
+    const exp = new Date(aprov);
+    exp.setDate(exp.getDate() + 90);
+
+    let expStr = exp.toLocaleDateString("pt-BR");
+    let classe = "";
+    let dias = diasEntre(l.dataAprovacao);
+    let diasVenc = Math.ceil((exp - hoje) / (1000 * 60 * 60 * 24));
+
+    if (hoje > exp) {
+      classe = "red";
+      expStr = "EXPIRADO";
+    } else if (dias <= 7) classe = "green";
+    else if (dias <= 30) classe = "yellow";
+    else classe = "orange";
+
+    tr.className = classe;
+    let tomadoPerc = l.limiteTotal > 0 ? ((l.tomado / l.limiteTotal) * 100).toFixed(1) : "0.0";
+
+    tr.innerHTML = `
+      <td>${l.nome}</td>
+      <td>${l.cpf}</td>
+      <td>R$ ${l.limiteTotal.toFixed(2)}</td>
+      <td>R$ ${l.tomado.toFixed(2)}</td>
+      <td>${tomadoPerc}%</td>
+      <td>R$ ${(l.limiteTotal - l.tomado).toFixed(2)}</td>
+      <td>${new Date(l.dataAprovacao + "T00:00:00").toLocaleDateString("pt-BR")}</td>
+      <td>${expStr}</td>
+      <td>${hoje > exp ? 0 : diasVenc}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function salvarNoFirebase() {
+  limites.forEach(l => {
+    db.collection("limites").doc(l.cpf).set(l);
+  });
+}
+
+function carregarDoFirebase() {
+  db.collection("limites").get().then(snapshot => {
+    limites = [];
+    snapshot.forEach(doc => {
+      limites.push(doc.data());
+    });
+    render();
+  });
 }
 
 function lancarLimite(){
-  const nome = document.getElementById("nomeInput").value;
-  const cpf = document.getElementById("cpfInput").value;
-  const valor = parseFloat(document.getElementById("valorInput").value);
-  const dataAprov = new Date(document.getElementById("dataInput").value);
-  const expira = new Date(dataAprov); expira.setDate(expira.getDate()+90);
+  const nome = document.getElementById("nome").value;
+  const cpf = document.getElementById("cpf").value;
+  const valor = Number(document.getElementById("valor").value);
+  const aprov = document.getElementById("aprovacao").value;
+  if (!nome || !cpf || !valor || !aprov) return;
 
-  let row = getRowByCPF(cpf);
-  if(row){ // substitui limite antigo
-    row.querySelector(".nome").textContent = nome;
-    row.querySelector(".total").textContent = valor.toFixed(2);
-    row.querySelector(".disponivel").textContent = valor.toFixed(2);
-    row.querySelector(".tomado").textContent = "0.00";
-    row.querySelector(".percent").textContent = "0%";
-    row.querySelector(".aprov").textContent = dataAprov.toLocaleDateString("pt-BR");
-    row.querySelector(".expira").textContent = expira.toLocaleDateString("pt-BR");
+  let existente = limites.find(l => l.cpf === cpf);
+  if (existente) {
+    existente.nome = nome;
+    existente.limiteTotal = valor;
+    existente.dataAprovacao = aprov;
+    existente.tomado = 0;
   } else {
-    row = document.createElement("tr");
-    row.dataset.cpf = cpf;
-    row.innerHTML = `
-      <td class="nome">${nome}</td>
-      <td class="cpf">${cpf}</td>
-      <td class="total">${valor.toFixed(2)}</td>
-      <td class="tomado">0.00</td>
-      <td class="percent">0%</td>
-      <td class="disponivel">${valor.toFixed(2)}</td>
-      <td class="aprov">${dataAprov.toLocaleDateString("pt-BR")}</td>
-      <td class="expira">${expira.toLocaleDateString("pt-BR")}</td>
-    `;
-    document.querySelector("#limitesTable tbody").appendChild(row);
+    limites.push({nome, cpf, limiteTotal: valor, tomado: 0, dataAprovacao: aprov});
   }
-  colorirRow(row, dataAprov);
-  closeModal("lancarModal");
+
+  closeModal('lancar');
+  render();
+  salvarNoFirebase();
 }
 
 function tomarCredito(){
-  const cpf = document.getElementById("cpfCredito").value;
-  const valor = parseFloat(document.getElementById("valorCredito").value);
-  const row = getRowByCPF(cpf);
-  if(!row) return;
+  const cpf = document.getElementById("cpfTomar").value;
+  const valor = Number(document.getElementById("valorTomar").value);
+  let cliente = limites.find(l => l.cpf === cpf);
+  if (!cliente) return alert("Cliente não encontrado");
 
-  let total = parseFloat(row.querySelector(".total").textContent);
-  let disponivel = parseFloat(row.querySelector(".disponivel").textContent);
-  let tomado = parseFloat(row.querySelector(".tomado").textContent);
-
-  if(valor > disponivel) return alert("Valor maior que o limite disponível!");
-
-  disponivel -= valor;
-  tomado += valor;
-
-  row.querySelector(".disponivel").textContent = disponivel.toFixed(2);
-  row.querySelector(".tomado").textContent = tomado.toFixed(2);
-  row.querySelector(".percent").textContent = ((tomado/total)*100).toFixed(1)+"%";
-
-  closeModal("creditoModal");
-}
-
-function colorirRow(row, dataAprov){
   const hoje = new Date();
-  const diff = Math.floor((hoje - dataAprov)/(1000*60*60*24));
-  row.classList.remove("green","yellow","orange");
-  if(diff <= 7) row.classList.add("green");
-  else if(diff <= 30) row.classList.add("yellow");
-  else row.classList.add("orange");
-}
-</script>
+  let exp = new Date(cliente.dataAprovacao + "T00:00:00");
+  exp.setDate(exp.getDate() + 90);
 
+  if (hoje > exp) return alert("Limite expirado");
+  const disponivel = cliente.limiteTotal - cliente.tomado;
+  if (disponivel <= 0) return alert("Limite indisponível");
+  if (valor > disponivel) return alert("Valor solicitado maior que disponível");
+
+  cliente.tomado += valor;
+  closeModal('tomar');
+  render();
+  salvarNoFirebase();
+}
+
+window.onload = function() {
+  carregarDoFirebase();
+};
+</script>
 </body>
 </html>
