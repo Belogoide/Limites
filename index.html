@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Radar de Limites</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f8fafc; margin:20px; }
+  table { border-collapse: collapse; width:100%; background:white; }
+  th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+  th { background:#f1f5f9; }
+  tr.green { background:#d1fadf; }
+  tr.yellow { background:#fef3c7; }
+  tr.orange { background:#ffedd5; }
+  button { margin:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
+  .primary { background:#2563eb; color:white; }
+  .secondary { background:#475569; color:white; }
+  .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; }
+  .modal-content { background:white; padding:20px; border-radius:8px; min-width:300px; }
+  .close { float:right; cursor:pointer; color:#475569; }
+</style>
+</head>
+<body>
+
+<h2>Radar de Limites</h2>
+<button class="primary" onclick="openModal('lancarModal')">Lançar Limite</button>
+<button class="secondary" onclick="openModal('creditoModal')">Tomada de Crédito</button>
+
+<table id="limitesTable">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>CPF</th>
+      <th>Limite Total</th>
+      <th>Tomado</th>
+      <th>Tomado %</th>
+      <th>Limite Disponível</th>
+      <th>Data Aprovação</th>
+      <th>Data Expiração</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Modal Lançar Limite -->
+<div id="lancarModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('lancarModal')">&times;</span>
+    <h3>Lançar Limite</h3>
+    <label>Nome: <input type="text" id="nomeInput"></label><br><br>
+    <label>CPF: <input type="text" id="cpfInput"></label><br><br>
+    <label>Valor Aprovado: <input type="number" id="valorInput"></label><br><br>
+    <label>Data Aprovação: <input type="date" id="dataInput"></label><br><br>
+    <button class="primary" onclick="lancarLimite()">Confirmar</button>
+  </div>
+</div>
+
+<!-- Modal Tomada de Crédito -->
+<div id="creditoModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('creditoModal')">&times;</span>
+    <h3>Tomada de Crédito</h3>
+    <label>CPF: <input type="text" id="cpfCredito"></label><br><br>
+    <label>Valor Tomado: <input type="number" id="valorCredito"></label><br><br>
+    <button class="primary" onclick="tomarCredito()">Confirmar</button>
+  </div>
+</div>
+
+<script>
+function openModal(id){ document.getElementById(id).style.display="flex"; }
+function closeModal(id){ document.getElementById(id).style.display="none"; }
+
+function getRowByCPF(cpf){
+  const rows = document.querySelectorAll("#limitesTable tbody tr");
+  for(let r of rows){
+    if(r.dataset.cpf === cpf) return r;
+  }
+  return null;
+}
+
+function lancarLimite(){
+  const nome = document.getElementById("nomeInput").value;
+  const cpf = document.getElementById("cpfInput").value;
+  const valor = parseFloat(document.getElementById("valorInput").value);
+  const dataAprov = new Date(document.getElementById("dataInput").value);
+  const expira = new Date(dataAprov); expira.setDate(expira.getDate()+90);
+
+  let row = getRowByCPF(cpf);
+  if(row){ // substitui limite antigo
+    row.querySelector(".nome").textContent = nome;
+    row.querySelector(".total").textContent = valor.toFixed(2);
+    row.querySelector(".disponivel").textContent = valor.toFixed(2);
+    row.querySelector(".tomado").textContent = "0.00";
+    row.querySelector(".percent").textContent = "0%";
+    row.querySelector(".aprov").textContent = dataAprov.toLocaleDateString("pt-BR");
+    row.querySelector(".expira").textContent = expira.toLocaleDateString("pt-BR");
+  } else {
+    row = document.createElement("tr");
+    row.dataset.cpf = cpf;
+    row.innerHTML = `
+      <td class="nome">${nome}</td>
+      <td class="cpf">${cpf}</td>
+      <td class="total">${valor.toFixed(2)}</td>
+      <td class="tomado">0.00</td>
+      <td class="percent">0%</td>
+      <td class="disponivel">${valor.toFixed(2)}</td>
+      <td class="aprov">${dataAprov.toLocaleDateString("pt-BR")}</td>
+      <td class="expira">${expira.toLocaleDateString("pt-BR")}</td>
+    `;
+    document.querySelector("#limitesTable tbody").appendChild(row);
+  }
+  colorirRow(row, dataAprov);
+  closeModal("lancarModal");
+}
+
+function tomarCredito(){
+  const cpf = document.getElementById("cpfCredito").value;
+  const valor = parseFloat(document.getElementById("valorCredito").value);
+  const row = getRowByCPF(cpf);
+  if(!row) return;
+
+  let total = parseFloat(row.querySelector(".total").textContent);
+  let disponivel = parseFloat(row.querySelector(".disponivel").textContent);
+  let tomado = parseFloat(row.querySelector(".tomado").textContent);
+
+  if(valor > disponivel) return alert("Valor maior que o limite disponível!");
+
+  disponivel -= valor;
+  tomado += valor;
+
+  row.querySelector(".disponivel").textContent = disponivel.toFixed(2);
+  row.querySelector(".tomado").textContent = tomado.toFixed(2);
+  row.querySelector(".percent").textContent = ((tomado/total)*100).toFixed(1)+"%";
+
+  closeModal("creditoModal");
+}
+
+function colorirRow(row, dataAprov){
+  const hoje = new Date();
+  const diff = Math.floor((hoje - dataAprov)/(1000*60*60*24));
+  row.classList.remove("green","yellow","orange");
+  if(diff <= 7) row.classList.add("green");
+  else if(diff <= 30) row.classList.add("yellow");
+  else row.classList.add("orange");
+}
+</script>
+
+</body>
+</html>
