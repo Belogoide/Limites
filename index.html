@@ -165,10 +165,14 @@ function render(){
     let classe = "";
     let dias = diasEntre(l.dataAprovacao);
     let diasVenc = Math.ceil((exp - hoje) / (1000 * 60 * 60 * 24));
+    let disponivel = l.limiteTotal - l.tomado;
 
     if (hoje > exp) {
       classe = "red";
       expStr = "EXPIRADO";
+    } else if (disponivel === 0) {
+      classe = "red";
+      expStr = "TOMADO";
     } else if (dias <= 7) classe = "green";
     else if (dias <= 30) classe = "yellow";
     else classe = "orange";
@@ -182,7 +186,7 @@ function render(){
       <td>R$ ${l.limiteTotal.toFixed(2)}</td>
       <td>R$ ${l.tomado.toFixed(2)}</td>
       <td>${tomadoPerc}%</td>
-      <td>R$ ${(l.limiteTotal - l.tomado).toFixed(2)}</td>
+      <td>R$ ${disponivel.toFixed(2)}</td>
       <td>${new Date(l.dataAprovacao + "T00:00:00").toLocaleDateString("pt-BR")}</td>
       <td>${expStr}</td>
       <td>${hoje > exp ? 0 : diasVenc}</td>
