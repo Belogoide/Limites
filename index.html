@@ -52,36 +52,57 @@
 </head>
 <body>
   <div class="container">
-    <h2>Radar de Limites</h2>
-    <input id="searchCpf" placeholder="Pesquisar CPF" maxlength="14">
-    <div>
-      <button onclick="openModal('tomar')">Tomar Crédito</button>
-      <button onclick="openModal('gestao')">Gestão de Limites</button>
-      <button onclick="openModal('consulta')">Consulta Limites</button>
+
+  <!-- Linha com logo e título centralizado -->
+  <div style="display:flex;align-items:center;justify-content:space-between;width:95%;margin-bottom:10px;">
+    <!-- Coluna Esquerda -->
+    <div style="flex:1;display:flex;justify-content:flex-start;">
+      <img src="https://tentoscapwebmanagerproduction.azurewebsites.net/brand/logo.svg" 
+           alt="Logo TentosCap" style="height:100px;">
     </div>
 
-    <table id="tabela">
-      <thead>
-        <tr>
-          <th>Nº</th>
-          <th>Nome</th>
-          <th>CPF</th>
-          <th>Produto</th>
-          <th>Limite Total</th>
-          <th>Tomado</th>
-          <th>% Tomado</th>
-          <th>Disponível</th>
-          <th>% Disponível</th>
-          <th>Data Aprovação</th>
-          <th>Data da Tomada</th>
-          <th>Data Expiração</th>
-          <th>Dias até Expiração</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- Coluna Centro -->
+    <div style="flex:1;display:flex;justify-content:center;">
+      <h2 style="margin:0;">Radar de Limites</h2>
+    </div>
+
+    <!-- Coluna Direita (apenas para balancear) -->
+    <div style="flex:1;"></div>
   </div>
+
+  <!-- Barra de pesquisa CPF -->
+  <input id="searchCpf" placeholder="Pesquisar CPF" maxlength="14">
+
+  <!-- Linha dos botões -->
+  <div>
+    <button onclick="openModal('tomar')">Tomar Crédito</button>
+    <button onclick="openModal('gestao')">Gestão de Limites</button>
+    <button onclick="openModal('consulta')">Consulta Limites</button>
+  </div>
+
+  <!-- Tabela -->
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Nº</th>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Produto</th>
+        <th>Limite Total</th>
+        <th>Tomado</th>
+        <th>% Tomado</th>
+        <th>Disponível</th>
+        <th>% Disponível</th>
+        <th>Data Aprovação</th>
+        <th>Data da Tomada</th>
+        <th>Data Expiração</th>
+        <th>Dias até Expiração</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
   <!-- Modal Tomar -->
   <div class="modal" id="modalTomar">
