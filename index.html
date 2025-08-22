@@ -3,12 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>Radar de Limites</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+
+  <!-- Fonte local -->
   <style>
+    @font-face {
+      font-family: 'MinhaFonte';
+      src: url('JTUSjIg1_i6t8kCHKm459Wlhyw.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     body {
-      font-family:'Montserrat',sans-serif;
+      font-family: 'MinhaFonte', sans-serif;
       background:#000;
       color:#fff;
       min-height:100vh;
@@ -17,11 +23,12 @@
       flex-direction:column;
       align-items:center;
     }
+
     .container {display:flex;flex-direction:column;align-items:center;width:100%;}
     h2 {margin:20px 0 10px 0;}
-    button {margin:10px;padding:10px 20px;border:none;border-radius:6px;background:#1e40af;color:white;font-weight:600;cursor:pointer;}
+    button {margin:10px;padding:10px 20px;border:none;border-radius:6px;background:#1e40af;color:white;font-weight:600;cursor:pointer;font-family:'MinhaFonte',sans-serif;}
     button:hover {background:#2563eb;}
-    table {border-collapse:collapse;margin-top:20px;background:#111;text-align:center;}
+    table {border-collapse:collapse;margin-top:20px;background:#111;text-align:center;width:95%;}
     th,td {border:1px solid #333;padding:12px;}
     th {background:#222;}
     tr.green {background:#064e3b;}
@@ -29,21 +36,25 @@
     tr.orange {background:#ffa500;}
     tr.red {background:#7f1d1d;color:#fff;}
     .modal {display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center;}
-    .modal-content {background:#111;padding:20px;border-radius:8px;width:320px;text-align:center;}
+    .modal-content {background:#111;padding:20px;border-radius:8px;width:360px;text-align:center;}
     .modal-content h3 {margin-top:0;}
     .modal-content input,.modal-content select {
       width:90%;margin:8px 0;padding:8px;border:none;border-radius:4px;background:#222;color:#fff;text-align:center;
+      font-family:'MinhaFonte', sans-serif;
     }
+    .modal-content select {appearance:none;-webkit-appearance:none;-moz-appearance:none;}
     .modal-content button {margin-top:10px;}
     #searchCpf {margin:10px 0;padding:8px;border:none;border-radius:4px;background:#222;color:#fff;text-align:center;width:200px;}
   </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div class="container">
     <h2>Radar de Limites</h2>
     <input id="searchCpf" placeholder="Pesquisar CPF" maxlength="14">
     <div>
-      <button onclick="openModal('lancar')">Lançar Limite</button>
       <button onclick="openModal('tomar')">Tomar Crédito</button>
       <button onclick="openModal('gestao')">Gestão de Limites</button>
       <button onclick="openModal('consulta')">Consulta Limites</button>
@@ -72,23 +83,6 @@
     </table>
   </div>
 
-  <!-- Modal Lançar -->
-  <div class="modal" id="modalLancar">
-    <div class="modal-content">
-      <h3>Lançar Limite</h3>
-      <input id="nome" placeholder="Nome">
-      <input id="cpf" placeholder="CPF" maxlength="14">
-
-      <input id="valorRural" placeholder="Limite Créd. Rural">
-      <input id="valorCPR" placeholder="Limite CPR">
-      <input id="valorCartao" placeholder="Limite Cartão">
-
-      <input id="aprovacao" type="date">
-      <button onclick="lancarLimite()">Confirmar</button>
-      <button onclick="closeModal('lancar')">Fechar</button>
-    </div>
-  </div>
-
   <!-- Modal Tomar -->
   <div class="modal" id="modalTomar">
     <div class="modal-content">
@@ -109,11 +103,13 @@
   <div class="modal" id="modalGestao">
     <div class="modal-content">
       <h3>Gestão de Limites</h3>
+      <input id="nomeGestao" placeholder="Nome">
       <input id="cpfGestao" placeholder="CPF" maxlength="14">
       <input id="globalLimite" placeholder="Limite Global">
       <input id="limiteRural" placeholder="Limite Créd. Rural">
       <input id="limiteCPR" placeholder="Limite CPR">
       <input id="limiteCartao" placeholder="Limite Cartão">
+      <input id="aprovacaoGestao" type="date">
       <button onclick="definirLimites()">Salvar</button>
       <button onclick="closeModal('gestao')">Fechar</button>
     </div>
@@ -121,11 +117,11 @@
 
   <!-- Modal Consulta de Limites -->
   <div class="modal" id="modalConsulta">
-    <div class="modal-content">
+    <div class="modal-content" style="width: 90%; max-width: 700px;">
       <h3>Consulta de Limites</h3>
       <input id="cpfConsulta" placeholder="CPF" maxlength="14">
       <button onclick="consultarLimites()">Consultar</button>
-      <div id="consultaResultado" style="margin-top:10px;text-align:left;"></div>
+      <div id="consultaResultado" style="margin-top:10px;text-align:center;width:100%;"></div>
       <button onclick="closeModal('consulta')">Fechar</button>
     </div>
   </div>
@@ -153,35 +149,21 @@ function render(){
     let percTomado=l.limiteTotal>0?((l.tomado/l.limiteTotal)*100).toFixed(1):"0.0";
     let percDisponivel=l.limiteTotal>0?((disponivel/l.limiteTotal)*100).toFixed(1):"0.0";
     let expStr="",diasVenc="",classe="",tomadaStr=l.dataTomada?new Date(l.dataTomada).toLocaleDateString("pt-BR"):"-";
-    let status = l.ativo ? "Ativo" : "Inativo";
+    let status=l.ativo?"Ativo":"Inativo";
+    if(l.ativo && l.tomado>0 && l.tomado<l.limiteTotal){status="Parcial";}
 
     if(!l.ativo){
-      classe="red";
-      expStr="INATIVO";
-      diasVenc="INATIVO";
-      disponivel=0;
-    } else if(l.dataExpirada || dias>90){
-      classe="red";
-      expStr="EXPIRADO";
-      diasVenc="EXPIRADO";
-      disponivel=0;
+      classe="red";expStr="INATIVO";diasVenc="INATIVO";disponivel=0;
+    } else if(dias>90){
+      classe="red";expStr="EXPIRADO";diasVenc="EXPIRADO";disponivel=0;l.ativo=false;status="Inativo";
     } else if(disponivel<=0){
-      classe="red";
-      expStr="TOMADO";
-      diasVenc="TOMADO";
-      l.ativo=false; // se zerar, fica inativo
+      classe="red";expStr="TOMADO";diasVenc="TOMADO";status="Inativo";
     } else if(dias<=7){
-      classe="green";
-      expStr=new Date(aprov.getTime()+90*86400000).toLocaleDateString("pt-BR");
-      diasVenc=90-dias;
+      classe="green";expStr=new Date(aprov.getTime()+90*86400000).toLocaleDateString("pt-BR");diasVenc=90-dias;
     } else if(dias<=30){
-      classe="yellow";
-      expStr=new Date(aprov.getTime()+90*86400000).toLocaleDateString("pt-BR");
-      diasVenc=90-dias;
+      classe="yellow";expStr=new Date(aprov.getTime()+90*86400000).toLocaleDateString("pt-BR");diasVenc=90-dias;
     } else {
-      classe="orange";
-      expStr=new Date(aprov.getTime()+90*86400000).toLocaleDateString("pt-BR");
-      diasVenc=90-dias;
+      classe="orange";expStr=new Date(aprov.getTime()+90*86400000).toLocaleDateString("pt-BR");diasVenc=90-dias;
     }
 
     tr.className=classe;
@@ -204,32 +186,46 @@ function render(){
   });
 }
 
-function salvarNoFirebase(){limites.forEach(l=>{db.collection("limites").doc(l.cpf+"_"+l.produto).set(l);});}
-function carregarDoFirebase(){db.collection("limites").get().then(snapshot=>{limites=[];snapshot.forEach(doc=>{limites.push(doc.data());});render();});}
+async function carregarDoFirebase(){
+  let snapshot=await db.collection("limites").get();
+  limites=[];snapshot.forEach(doc=>{limites.push(doc.data());});
+  render();
+}
 
-function lancarLimite(){
-  const nome=document.getElementById("nome").value;
-  const cpf=document.getElementById("cpf").value.replace(/\D/g,"");
-  const aprov=document.getElementById("aprovacao").value;
+async function salvarNoFirebase(limite,cpf,seq){
+  await db.collection("limites").doc(cpf+"_"+seq).set(limite);
+}
 
-  const valorRural=parseFloat(document.getElementById("valorRural").value.replace(/\D/g,""))/100;
-  const valorCPR=parseFloat(document.getElementById("valorCPR").value.replace(/\D/g,""))/100;
-  const valorCartao=parseFloat(document.getElementById("valorCartao").value.replace(/\D/g,""))/100;
+async function definirLimites(){
+  const nome=document.getElementById("nomeGestao").value;
+  const cpf=document.getElementById("cpfGestao").value.replace(/\D/g,"");
+  const global=parseFloat(document.getElementById("globalLimite").value.replace(/\D/g,""))/100;
+  const rural=parseFloat(document.getElementById("limiteRural").value.replace(/\D/g,""))/100;
+  const cpr=parseFloat(document.getElementById("limiteCPR").value.replace(/\D/g,""))/100;
+  const cartao=parseFloat(document.getElementById("limiteCartao").value.replace(/\D/g,""))/100;
+  const aprov=document.getElementById("aprovacaoGestao").value;
 
-  if(!nome||!cpf||cpf.length!==11||!aprov) return alert("Preencha todos os campos corretamente");
+  if(!nome||!cpf||cpf.length!==11||!global||!aprov)return alert("Preencha todos os campos corretamente");
+  if(rural>global||cpr>global||cartao>global)return alert("Nenhum limite de produto pode ser maior que o global");
 
-  function criarLimite(produto,valor){
-    if(valor>0){
-      limites.forEach(l=>{if(l.cpf===cpf && l.produto===produto){l.ativo=false;}});
-      limites.push({nome,cpf,produto,limiteTotal:valor,tomado:0,dataAprovacao:aprov,dataTomada:null,ativo:true});
+  let produtos={"Créd. Rural":rural,"CPR":cpr,"Cartão":cartao};
+  let seq=Date.now();
+
+  // salva global separado
+  await db.collection("limitesGlobais").doc(cpf).set({cpf,nome,global,data:aprov});
+  limitesGlobais[cpf]={global,produtos};
+
+  for(const prod in produtos){
+    if(produtos[prod]>0){
+      // inativar antigos
+      let snap=await db.collection("limites").where("cpf","==",cpf).where("produto","==",prod).where("ativo","==",true).get();
+      snap.forEach(doc=>{doc.ref.update({ativo:false});});
+      let novo={nome,cpf,produto:prod,limiteTotal:produtos[prod],tomado:0,dataAprovacao:aprov,dataTomada:null,ativo:true};
+      await salvarNoFirebase(novo,cpf,seq+"_"+prod);
+      limites.push(novo);
     }
   }
-
-  criarLimite("Créd. Rural",valorRural);
-  criarLimite("CPR",valorCPR);
-  criarLimite("Cartão",valorCartao);
-
-  closeModal('lancar');render();salvarNoFirebase();
+  closeModal('gestao');alert("Limites salvos!");render();
 }
 
 function tomarCredito(){
@@ -237,77 +233,61 @@ function tomarCredito(){
   const produto=document.getElementById("produtoTomar").value;
   const valor=parseFloat(document.getElementById("valorTomar").value.replace(/\D/g,""))/100;
 
-  let cliente=limites.find(l=>l.cpf===cpf && l.produto===produto && l.ativo && (l.limiteTotal-l.tomado)>0);
-  if(!cliente) return alert("Cliente/produto não encontrado, inativo ou sem limite disponível");
+  let cliente=limites.find(l=>l.cpf===cpf&&l.produto===produto&&l.ativo);
+  if(!cliente)return alert("Limite não encontrado ou inativo");
 
-  if(cliente.dataExpirada) return alert("Limite expirado");
   const dias=diasEntre(cliente.dataAprovacao);
-  if(dias>90) return alert("Limite expirado");
+  if(dias>90)return alert("Limite expirado");
 
-  const disponivel=cliente.limiteTotal-cliente.tomado;
-  if(valor>disponivel) return alert("Valor solicitado maior que disponível");
+  let disponivel=cliente.limiteTotal-cliente.tomado;
+  if(valor>disponivel)return alert("Valor maior que disponível");
 
   const regras=limitesGlobais[cpf];
   if(regras){
     let somaTomados=limites.filter(l=>l.cpf===cpf).reduce((s,l)=>s+l.tomado,0);
-    if(somaTomados+valor>regras.global) return alert("Ultrapassa o limite global!");
-    let tomadoProduto=limites.filter(l=>l.cpf===cpf && l.produto===produto).reduce((s,l)=>s+l.tomado,0);
-    if(tomadoProduto+valor>regras.produtos[produto]) return alert("Ultrapassa o limite do produto!");
+    if(somaTomados+valor>regras.global)return alert("Ultrapassa o limite global!");
+    let tomadoProd=limites.filter(l=>l.cpf===cpf&&l.produto===produto).reduce((s,l)=>s+l.tomado,0);
+    if(tomadoProd+valor>regras.produtos[produto])return alert("Ultrapassa o limite do produto!");
   }
 
-  cliente.tomado+=valor;
-  cliente.dataTomada=new Date().toISOString();
-
-  if(cliente.tomado>=cliente.limiteTotal){cliente.ativo=false;}
-
-  closeModal('tomar');render();salvarNoFirebase();
+  cliente.tomado+=valor;cliente.dataTomada=new Date().toISOString();
+  render();
+  db.collection("limites").where("cpf","==",cpf).where("produto","==",produto).where("ativo","==",true).get().then(snap=>{
+    snap.forEach(doc=>{doc.ref.update(cliente);});
+  });
+  closeModal('tomar');
 }
 
-function definirLimites(){
-  const cpf=document.getElementById("cpfGestao").value.replace(/\D/g,"");
-  if(!cpf) return alert("Informe CPF");
-
-  const global=parseFloat(document.getElementById("globalLimite").value.replace(/\D/g,""))/100;
-  const rural=parseFloat(document.getElementById("limiteRural").value.replace(/\D/g,""))/100;
-  const cpr=parseFloat(document.getElementById("limiteCPR").value.replace(/\D/g,""))/100;
-  const cartao=parseFloat(document.getElementById("limiteCartao").value.replace(/\D/g,""))/100;
-
-  if(rural>global || cpr>global || cartao>global){
-    return alert("Nenhum limite de produto pode ser maior que o Global!");
-  }
-
-  limitesGlobais[cpf]={global,produtos:{"Créd. Rural":rural,"CPR":cpr,"Cartão":cartao}};
-  closeModal('gestao');alert("Limites definidos!");
-}
-
-function consultarLimites(){
+async function consultarLimites(){
   const cpf=document.getElementById("cpfConsulta").value.replace(/\D/g,"");
   if(!cpf)return alert("Informe CPF");
-  const regras=limitesGlobais[cpf];
-  if(!regras)return alert("CPF não encontrado na gestão de limites");
+  let globalDoc=await db.collection("limitesGlobais").doc(cpf).get();
+  if(!globalDoc.exists)return alert("CPF não encontrado");
+  const regras=globalDoc.data();
 
   let html="<table style='width:100%;border-collapse:collapse;text-align:center;'><tr><th>Produto</th><th>Limite</th><th>Tomado</th><th>Disponível</th></tr>";
   let somaTomado=limites.filter(l=>l.cpf===cpf).reduce((s,l)=>s+l.tomado,0);
   let dispGlobal=regras.global-somaTomado;
   html+=`<tr><td><b>Global</b></td><td>${formatMoney(regras.global)}</td><td>${formatMoney(somaTomado)}</td><td>${formatMoney(dispGlobal)}</td></tr>`;
-  Object.keys(regras.produtos).forEach(prod=>{
-    let tomado=limites.filter(l=>l.cpf===cpf && l.produto===prod).reduce((s,l)=>s+l.tomado,0);
-    let disp=regras.produtos[prod]-tomado;
-    html+=`<tr><td>${prod}</td><td>${formatMoney(regras.produtos[prod])}</td><td>${formatMoney(tomado)}</td><td>${formatMoney(disp)}</td></tr>`;
+  ["Créd. Rural","CPR","Cartão"].forEach(prod=>{
+    let tomado=limites.filter(l=>l.cpf===cpf&&l.produto===prod).reduce((s,l)=>s+l.tomado,0);
+    let disp=regras.produtos?regras.produtos[prod]-tomado:0;
+    let limiteFixado=regras.produtos?regras.produtos[prod]:0;
+    html+=`<tr><td>${prod}</td><td>${formatMoney(limiteFixado)}</td><td>${formatMoney(tomado)}</td><td>${formatMoney(disp)}</td></tr>`;
   });
   html+="</table>";
   document.getElementById("consultaResultado").innerHTML=html;
 }
 
-// Máscaras
 function aplicarMascaraCPF(input){input.addEventListener("input",()=>{let v=input.value.replace(/\D/g,"");if(v.length>11)v=v.slice(0,11);input.value=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,(m,p1,p2,p3,p4)=>p4?`${p1}.${p2}.${p3}-${p4}`:`${p1}.${p2}.${p3}`);});}
 function aplicarMascaraMoeda(input){input.addEventListener("input",()=>{let v=input.value.replace(/\D/g,"");if(v==="")v="0";v=(parseFloat(v)/100).toFixed(2);input.value=v.replace(".",",").replace(/\B(?=(\d{3})+(?!\d))/g,".");});}
 
 window.onload=function(){
   carregarDoFirebase();
-  ["cpf","cpfTomar","cpfGestao","cpfConsulta","searchCpf"].forEach(id=>aplicarMascaraCPF(document.getElementById(id)));
-  ["valorRural","valorCPR","valorCartao","valorTomar","globalLimite","limiteRural","limiteCPR","limiteCartao"].forEach(id=>aplicarMascaraMoeda(document.getElementById(id)));
+  ["cpfTomar","cpfGestao","cpfConsulta","searchCpf"].forEach(id=>aplicarMascaraCPF(document.getElementById(id)));
+  ["valorTomar","globalLimite","limiteRural","limiteCPR","limiteCartao"].forEach(id=>aplicarMascaraMoeda(document.getElementById(id)));
   document.getElementById("searchCpf").addEventListener("input",e=>{filtroCpf=e.target.value.replace(/\D/g,"");render();});
 };
 </script>
-</body
+</body>
+</html>
